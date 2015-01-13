@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<!-- HTML HEAD -->
+<head>
+	<title></title>
+	
+	<!-- CSS -->
+	<style type="text/css">
+
+	</style>
+
+	<!-- INCLUDED SCRIPTS -->
+	<script type="text/javascript" src="js/peer.min.js"></script>
+	<script type="text/javascript" src="js/jquery-1.2.6.min.js"></script>
+
+	<h1>Live Editor (Google Docs) using WebRTC</h1>
+
+</head>
+
+<!-- MAIN SCRIPT -->
+<script>
+	var conn;
+	var peer = new Peer({key: 'gb47i8kw1ihbmx6r'});
+
+	peer.on("open", function(id) {
+		document.getElementById("myID").innerHTML = id;
+	})
+
+	peer.on("connection", connect);
+
+	function connect(c) {
+		conn = c;
+		$("#peerID").val(conn.peer);
+		$("#progBar").val("100");
+		conn.on('data',function(data) {
+			$('#inputTxt').val($('#inputTxt').val()+data);
+		});
+		conn.on('disconnect', disconnect);
+	}
+
+	function disconnect(){
+		alert('Disconnected from the server!');
+		$('#peerID').val("");
+		$('#progBar').val("0");
+		$('#inputTxt').val("");
+	}
+
+	$(document).ready(function() {
+		$("#connect").click(function() {
+			$("#progBar").val("50")
+			var c = peer.connect($('#peerID').val());
+			c.on('open', function() {
+				connect(c);
+			});
+		});
+
+		$("#inputTxt").keypress(function(e){
+			var ev = e || window.event;
+			var asciiKey = ev.keyCode || ev.which;
+			text = String.fromCharCode(asciiKey);
+			conn.send(text);
+		});
+
+		$('#disconnect').click(function(){
+			$("#progBar").val("50");
+			disconnect();
+		});
+	});
+
+
+
+</script>
+
+<!-- HTML BODY -->
+<body>
+	Your ID: <span id="myID"></span>
+	<br></br>
+
+	Connect to Peer: 	<input id="peerID" type="text" placeholder="(Enter peer's ID)">
+						<input id="connect" type="button" value="connect">
+						<input id="disconnect" type="button" value="disconnect"> <br></br>
+
+	<progress id="progBar" max="100" value="0"></progress>
+	<br></br>
+	<textarea id="inputTxt" rows=30 style="width: 90%; height: 1%; margin-left: 5%;"></textarea>
+
+</body>
+
+</html>
